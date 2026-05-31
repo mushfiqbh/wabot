@@ -21,11 +21,11 @@ module.exports = {
     const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
     if (!text || !text.startsWith(prefix)) return;
     logger.info(`Received command from ${from}: ${text}`);
-    const [cmdName, ...args] = text.slice(1).trim().split(" ");
+    const [cmdName, ...args] = text.slice(1).trim().split(/\s+/);
     const command = commands.get(cmdName.toLowerCase());
     if (command) {
       try {
-        await command.execute(sock, from, args);
+        await command.execute(sock, from, args, text);
         logger.info(`Command executed: ${cmdName}`);
       } catch (err) {
         logger.error(`Command error (${cmdName}): ${err}`);

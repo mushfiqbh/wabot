@@ -142,28 +142,47 @@ class SupabaseService {
     }
 
     async getNextPendingMessage() {
-        // Use a transaction-like approach by updating status to 'processing'
-        // to avoid multiple workers picking up the same message
+        // Find messages where the client has an active subscription
+        const now = new Date().toISOString();
+        
+        // This is a bit complex for a single query in Supabase without a RPC or View
+        // We'll fetch pending messages and then check if the client has a sub
         const { data, error } = await this.client
             .from('wa_messages')
-            .select('*')
+            .select('*, wa_clients(id)')
             .eq('status', 'pending')
             .order('created_at', { ascending: true })
-            .limit(1)
-            .maybeSingle();
+            .limit(20); // Get a batch to check
 
-        if (error || !data) return null;
+        if (error || !data || data.length === 0) return null;
 
-        // Mark as processing immediately
-        const { data: updated, error: updateError } = await this.client
-            .from('wa_messages')
-            .update({ status: 'processing', updated_at: new Date() })
-            .eq('id', data.id)
-            .select()
-            .single();
+        for (const msg of data) {
+            const { data: sub } = await this.client
+                .from('subscriptions')
+                .select('id')
+                .eq('client_id', msg.client_id)
+                .eq('status', 'active')
+                .gt('end_date', now)
+                .limit(1)
+                .maybeSingle();
 
-        if (updateError) return null;
-        return updated;
+            if (sub) {
+                // Mark as processing immediately
+                const { data: updated, error: updateError } = await this.client
+                    .from('wa_messages')
+                    .update({ status: 'processing', updated_at: new Date() })
+                    .eq('id', msg.id)
+                    .select()
+                    .single();
+
+                if (!updateError) return updated;
+            } else {
+                // Optional: mark message as failed if no active sub
+                await this.updateMessageStatus(msg.id, 'failed', 'No active subscription');
+            }
+        }
+
+        return null;
     }
 
     async updateMessageStatus(id, status, errorMsg = null, retryCount = null) {
