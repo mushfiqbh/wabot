@@ -46,7 +46,7 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="mt-16 grid gap-8 lg:grid-cols-2 lg:max-w-4xl lg:mx-auto">
+      <div className="mt-16 grid gap-8 lg:grid-cols-3 lg:max-w-7xl lg:mx-auto">
         {packages.map((pkg) => (
           <div key={pkg.id} className="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             <div className="p-8">
@@ -54,7 +54,11 @@ export default function PricingPage() {
               <p className="mt-4 text-gray-500">{pkg.description}</p>
               <p className="mt-8">
                 <span className="text-4xl font-extrabold text-gray-900">{pkg.price === 0 ? 'Free' : `${pkg.price} Tk`}</span>
-                {pkg.price > 0 && <span className="text-base font-medium text-gray-500"> / month</span>}
+                {pkg.price > 0 && (
+                  <span className="text-base font-medium text-gray-500">
+                    {pkg.duration_days >= 365 ? ' / year' : ' / month'}
+                  </span>
+                )}
               </p>
               <Link
                 href={`/checkout/${pkg.id}`}

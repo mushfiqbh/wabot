@@ -47,6 +47,15 @@ export default function CheckoutPage() {
     try {
       // If it's a paid package, use bKash
       if (pkg.price > 0) {
+        // 1. Get client_id first as we need it for metadata
+        const { data: client, error: clientError } = await supabase
+          .from('wa_clients')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (clientError || !client) throw new Error("Client not found. Please setup your profile.");
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'}/api/bkash/make-payment`, {
           method: 'POST',
           headers: {
@@ -54,7 +63,7 @@ export default function CheckoutPage() {
           },
           body: JSON.stringify({
             amount: pkg.price,
-            reference: pkg.id,
+            reference: `${client.id}:${pkg.id}`, // Store both client_id and package_id in reference
             name: user.email?.split('@')[0] || 'User',
             email: user.email,
             phone: '', // Can be collected from a form if needed
