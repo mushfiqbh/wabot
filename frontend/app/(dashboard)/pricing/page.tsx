@@ -19,7 +19,7 @@ export default function PricingPage() {
 
   useEffect(() => {
     async function fetchPackages() {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('packages')
         .select('*')
         .eq('is_active', true)
@@ -42,7 +42,7 @@ export default function PricingPage() {
           Simple, transparent pricing
         </h2>
         <p className="mt-4 text-xl text-gray-600">
-          Choose the plan that's right for your business.
+          Choose the plan that&apos;s right for your business.
         </p>
       </div>
 
@@ -68,17 +68,17 @@ export default function PricingPage() {
             <div className="flex-1 flex flex-col justify-between p-8 bg-gray-50">
               <ul className="space-y-4">
                 <li className="flex items-start">
-                  <Check className="flex-shrink-0 h-6 w-6 text-green-500" />
+                  <Check className="shrink-0 h-6 w-6 text-green-500" />
                   <span className="ml-3 text-base text-gray-700">WhatsApp API Access</span>
                 </li>
                 <li className="flex items-start">
-                  <Check className="flex-shrink-0 h-6 w-6 text-green-500" />
+                  <Check className="shrink-0 h-6 w-6 text-green-500" />
                   <span className="ml-3 text-base text-gray-700">
                     {pkg.duration_days} Days Validity
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <Check className="flex-shrink-0 h-6 w-6 text-green-500" />
+                  <Check className="shrink-0 h-6 w-6 text-green-500" />
                   <span className="ml-3 text-base text-gray-700">24/7 Priority Support</span>
                 </li>
               </ul>

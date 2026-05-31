@@ -10,12 +10,6 @@ CREATE TABLE IF NOT EXISTS public.packages (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Insert the specified packages
-INSERT INTO public.packages (name, description, price, duration_days)
-VALUES 
-('Free Trial', 'Try our service for 3 days', 0, 3),
-('WhatsApp API', 'Full access to WhatsApp API', 500, 30);
-
 -- Subscriptions table
 CREATE TABLE IF NOT EXISTS public.subscriptions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

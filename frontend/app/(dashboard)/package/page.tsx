@@ -139,7 +139,7 @@ export default function MyPackagePage() {
               </div>
             </div>
             <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100 flex items-start space-x-3">
-              <AlertCircle className="text-yellow-600 flex-shrink-0" size={20} />
+              <AlertCircle className="text-yellow-600 shrink-0" size={20} />
               <p className="text-sm text-yellow-700">
                 Your plan is active. Make sure to renew before the expiry date to avoid service interruption.
               </p>

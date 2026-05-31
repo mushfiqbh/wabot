@@ -18,7 +18,7 @@ import { useAuth } from "../lib/auth-context";
 import { cn } from "../lib/utils";
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Account', href: '/account', icon: User },
   { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'My Package', href: '/package', icon: Package },

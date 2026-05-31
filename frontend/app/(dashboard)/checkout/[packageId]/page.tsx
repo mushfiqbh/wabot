@@ -45,6 +45,31 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
+      // If it's a paid package, use bKash
+      if (pkg.price > 0) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'}/api/bkash/make-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: pkg.price,
+            reference: pkg.id,
+            name: user.email?.split('@')[0] || 'User',
+            email: user.email,
+            phone: '', // Can be collected from a form if needed
+          }),
+        });
+
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url; // Redirect to bKash
+          return;
+        } else {
+          throw new Error(data.message || "Failed to initiate bKash payment");
+        }
+      }
+
       // 1. Get client_id
       const { data: client, error: clientError } = await supabase
         .from('wa_clients')
