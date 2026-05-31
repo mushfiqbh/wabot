@@ -60,7 +60,64 @@ class BkashController {
             }
 
             // Payment successful
-            // Here you would typically update your database (e.g. mark order as paid)
+            // Handle logical updates (subscriptions and ledger)
+            const { payerReference, customerMsisdn, trxID, amount } = executePaymentResponse;
+            const [clientId, packageId] = (payerReference || "").split(":");
+
+            if (clientId && packageId) {
+                try {
+                    const { createClient } = require('@supabase/supabase-js');
+                    const supabase = createClient(
+                        process.env.SUPABASE_URL,
+                        process.env.SUPABASE_SERVICE_ROLE_KEY
+                    );
+
+                    // 1. Fetch package details for duration
+                    const { data: pkg } = await supabase
+                        .from('packages')
+                        .select('duration_days, name')
+                        .eq('id', packageId)
+                        .single();
+
+                    if (pkg) {
+                        // 2. Deactivate existing subscriptions
+                        await supabase
+                            .from('subscriptions')
+                            .update({ status: 'canceled' })
+                            .eq('client_id', clientId)
+                            .eq('status', 'active');
+
+                        // 3. Create new subscription
+                        const startDate = new Date();
+                        const endDate = new Date();
+                        endDate.setDate(startDate.getDate() + pkg.duration_days);
+
+                        await supabase
+                            .from('subscriptions')
+                            .insert({
+                                client_id: clientId,
+                                package_id: packageId,
+                                start_date: startDate.toISOString(),
+                                end_date: endDate.toISOString(),
+                                status: 'active'
+                            });
+
+                        // 4. Record in ledger
+                        await supabase
+                            .from('ledger')
+                            .insert({
+                                client_id: clientId,
+                                amount: -parseFloat(amount),
+                                type: 'subscription_payment',
+                                description: `Purchase of ${pkg.name} via bKash (TrxID: ${trxID}, Phone: ${customerMsisdn})`
+                            });
+                    }
+                } catch (dbError) {
+                    console.error("Database Update Error after bKash Payment:", dbError);
+                    // We don't necessarily want to show an error to the user if the payment succeeded 
+                    // but the DB update failed - though in a real app you'd want a reconciliation job.
+                }
+            }
             
             return res.redirect(`${frontendUrl}/payment/success`);
         } catch (error) {
