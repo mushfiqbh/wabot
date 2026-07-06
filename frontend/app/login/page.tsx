@@ -48,7 +48,6 @@ export default function LoginPage() {
             userId: data.user.id,
             phone,
           });
-          alert("Registration successful! Check your email for verification.");
           setAuthMode("login");
         }
       } else {
@@ -59,7 +58,13 @@ export default function LoginPage() {
         if (error) throw error;
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An error occurred during authentication.");
+      if (axios.isAxiosError(err)) {
+        // Show the real backend error message, not just "Request failed with status code 500"
+        const backendMsg = err.response?.data?.error;
+        setError(backendMsg || err.message || "An error occurred during authentication.");
+      } else {
+        setError(err instanceof Error ? err.message : "An error occurred during authentication.");
+      }
     } finally {
       setLoading(false);
     }

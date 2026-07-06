@@ -47,7 +47,7 @@ export default function MyPackagePage() {
 
       try {
         const { data: client } = await supabase
-          .from('wa_clients')
+          .from('clients')
           .select('id')
           .eq('user_id', user.id)
           .single();

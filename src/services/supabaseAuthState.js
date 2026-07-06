@@ -6,7 +6,7 @@ const { BufferJSON, initAuthCreds, proto } = require('@whiskeysockets/baileys');
 const useSupabaseAuthState = async (supabase, clientId) => {
     const writeData = async (data, category) => {
         const { data: existing } = await supabase
-            .from('wa_sessions')
+            .from('sessions')
             .select('data')
             .eq('id', clientId)
             .single();
@@ -24,7 +24,7 @@ const useSupabaseAuthState = async (supabase, clientId) => {
         }
 
         await supabase
-            .from('wa_sessions')
+            .from('sessions')
             .upsert({ 
                 id: clientId, 
                 data: sessionData,
@@ -34,7 +34,7 @@ const useSupabaseAuthState = async (supabase, clientId) => {
 
     const readData = async (category) => {
         const { data, error } = await supabase
-            .from('wa_sessions')
+            .from('sessions')
             .select('data')
             .eq('id', clientId)
             .single();
@@ -51,7 +51,7 @@ const useSupabaseAuthState = async (supabase, clientId) => {
 
     // Load initial creds
     const { data: session } = await supabase
-        .from('wa_sessions')
+        .from('sessions')
         .select('data')
         .eq('id', clientId)
         .single();

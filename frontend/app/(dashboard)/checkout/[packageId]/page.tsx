@@ -49,7 +49,7 @@ export default function CheckoutPage() {
       if (pkg.price > 0) {
         // 1. Get client_id first as we need it for metadata
         const { data: client, error: clientError } = await supabase
-          .from('wa_clients')
+          .from('clients')
           .select('id')
           .eq('user_id', user.id)
           .single();
@@ -81,7 +81,7 @@ export default function CheckoutPage() {
 
       // 1. Get client_id
       const { data: client, error: clientError } = await supabase
-        .from('wa_clients')
+        .from('clients')
         .select('id')
         .eq('user_id', user.id)
         .single();

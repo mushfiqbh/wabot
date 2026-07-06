@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.packages (
 -- Subscriptions table
 CREATE TABLE IF NOT EXISTS public.subscriptions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    client_id UUID NOT NULL REFERENCES public.wa_clients(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
     package_id UUID NOT NULL REFERENCES public.packages(id),
     start_date TIMESTAMPTZ DEFAULT now(),
     end_date TIMESTAMPTZ NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
 -- Ledger table for accounting
 CREATE TABLE IF NOT EXISTS public.ledger (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    client_id UUID NOT NULL REFERENCES public.wa_clients(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
     amount DECIMAL(10, 2) NOT NULL, -- Positive for credit, Negative for debit
     type TEXT NOT NULL, -- e.g., 'subscription_payment', 'top_up', 'refund'
     description TEXT,
@@ -47,7 +47,7 @@ CREATE POLICY "Public can view packages" ON public.packages FOR SELECT USING (tr
 CREATE POLICY "Users can view own subscriptions" ON public.subscriptions
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM public.wa_clients
+            SELECT 1 FROM public.clients
             WHERE id = public.subscriptions.client_id
             AND user_id = auth.uid()
         )
@@ -56,7 +56,7 @@ CREATE POLICY "Users can view own subscriptions" ON public.subscriptions
 CREATE POLICY "Users can insert own subscriptions" ON public.subscriptions
     FOR INSERT WITH CHECK (
         EXISTS (
-            SELECT 1 FROM public.wa_clients
+            SELECT 1 FROM public.clients
             WHERE id = client_id
             AND user_id = auth.uid()
         )
@@ -65,7 +65,7 @@ CREATE POLICY "Users can insert own subscriptions" ON public.subscriptions
 CREATE POLICY "Users can update own subscriptions" ON public.subscriptions
     FOR UPDATE USING (
         EXISTS (
-            SELECT 1 FROM public.wa_clients
+            SELECT 1 FROM public.clients
             WHERE id = client_id
             AND user_id = auth.uid()
         )
@@ -74,7 +74,7 @@ CREATE POLICY "Users can update own subscriptions" ON public.subscriptions
 CREATE POLICY "Users can view own ledger" ON public.ledger
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM public.wa_clients
+            SELECT 1 FROM public.clients
             WHERE id = public.ledger.client_id
             AND user_id = auth.uid()
         )
@@ -83,7 +83,7 @@ CREATE POLICY "Users can view own ledger" ON public.ledger
 CREATE POLICY "Users can insert own ledger" ON public.ledger
     FOR INSERT WITH CHECK (
         EXISTS (
-            SELECT 1 FROM public.wa_clients
+            SELECT 1 FROM public.clients
             WHERE id = client_id
             AND user_id = auth.uid()
         )

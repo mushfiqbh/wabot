@@ -16,7 +16,7 @@ BEGIN
     new_key := encode(gen_random_bytes(24), 'base64');
 
     -- Update the client record for the current user
-    UPDATE public.wa_clients
+    UPDATE public.clients
     SET api_key = new_key,
         updated_at = now()
     WHERE user_id = auth.uid();

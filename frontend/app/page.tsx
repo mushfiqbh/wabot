@@ -8,14 +8,10 @@ import {
   BarChart3, 
   CheckCircle2, 
   ArrowRight,
-  Layout,
-  Smartphone,
-  MessageCircle,
   Menu,
   X
 } from "lucide-react";
 import { useState } from "react";
-import { cn } from "../lib/utils";
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -89,7 +85,7 @@ export default function LandingPage() {
             Next-Gen WhatsApp Automation
           </div>
           
-          <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-6 bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-6 bg-linear-to-b from-white to-white/40 bg-clip-text text-transparent">
             Scale your reach <br className="hidden md:block" />
             with <span className="text-green-500">Precision.</span>
           </h1>
@@ -138,11 +134,11 @@ export default function LandingPage() {
 
         {/* Messaging Preview Section */}
         <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-green-500/10 to-blue-500/10 border border-white/10 rounded-[40px] p-8 md:p-16 overflow-hidden relative">
+          <div className="bg-linear-to-br from-green-500/10 to-blue-500/10 border border-white/10 rounded-[40px] p-8 md:p-16 overflow-hidden relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight">Conversation is the new conversion.</h2>
-                <p className="text-gray-400 text-lg mb-8">Stop sending static emails that get ignored. Reach your users where they are—on WhatsApp. With 98% open rates, you can't afford to miss out.</p>
+                <p className="text-gray-400 text-lg mb-8">Stop sending static emails that get ignored. Reach your users where they are—on WhatsApp. With 98% open rates, you cannot afford to miss out.</p>
                 <div className="space-y-4 text-gray-300">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="text-green-500" size={20} />
@@ -167,7 +163,7 @@ export default function LandingPage() {
                   <div className="space-y-3">
                     <div className="bg-white/5 p-3 rounded-xl rounded-tl-none w-3/4 text-sm italic text-gray-400">Hello! How can we help you today?</div>
                     <div className="bg-green-600 p-3 rounded-xl rounded-tr-none ml-auto w-3/4 text-sm font-medium">I need to upgrade my plan.</div>
-                    <div className="bg-white/5 p-3 rounded-xl rounded-tl-none w-3/4 text-sm">Sure! I've sent you a secure link to manage your subscription.</div>
+                    <div className="bg-white/5 p-3 rounded-xl rounded-tl-none w-3/4 text-sm">Sure! I`ve sent you a secure link to manage your subscription.</div>
                   </div>
                 </div>
               </div>
@@ -186,12 +182,13 @@ export default function LandingPage() {
             {/* Starter */}
             <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] hover:border-white/20 transition-all flex flex-col">
               <div className="text-gray-400 font-bold mb-4 uppercase tracking-widest text-xs">Starter</div>
-              <div className="text-5xl font-black mb-8">$0<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+              <div className="text-5xl font-black mb-8">৳0<span className="text-lg text-gray-500 font-normal">/week</span></div>
               <ul className="space-y-4 mb-10 text-gray-400 flex-1">
-                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 1 WhatsApp Session</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 7 Days Trial</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 1 WhatsApp Account</li>
                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 100 Messages/day</li>
-                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Basic Webhooks</li>
-                <li className="flex items-center gap-3 text-gray-600"><X size={18} /> API Access</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> API Access</li>
+                <li className="flex items-center gap-3 text-gray-600"><X size={18} /> Priority Support</li>
               </ul>
               <button className="w-full py-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-all font-bold">Try Free</button>
             </div>
@@ -199,29 +196,32 @@ export default function LandingPage() {
             {/* Pro */}
             <div className="bg-white/5 border-2 border-green-500 p-10 rounded-[40px] relative overflow-hidden transform md:-translate-y-4 flex flex-col shadow-2xl shadow-green-900/10">
               <div className="absolute top-0 right-0 bg-green-500 text-black text-[10px] font-black px-4 py-1 rounded-bl-2xl uppercase tracking-tighter">Recommended</div>
-              <div className="text-green-400 font-bold mb-4 uppercase tracking-widest text-xs">Professional</div>
-              <div className="text-5xl font-black mb-8">$49<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+              <div className="text-green-400 font-bold mb-4 uppercase tracking-widest text-xs">Premium</div>
+              <div className="text-5xl font-black mb-8">৳500<span className="text-lg text-gray-500 font-normal">/month</span></div>
               <ul className="space-y-4 mb-10 text-gray-300 flex-1">
-                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 5 WhatsApp Sessions</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 1 WhatsApp Account</li>
                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Unlimited Messages</li>
                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Advanced Analytics</li>
                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> API Access</li>
                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Priority Support</li>
+                <li className="flex items-center gap-3 text-gray-600"><X size={18} /> Chat BOT </li>
               </ul>
-              <button className="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-500 transition-all font-bold shadow-lg shadow-green-900/20">Go Pro</button>
+              <button className="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-500 transition-all font-bold shadow-lg shadow-green-900/20">Buy Now</button>
             </div>
 
             {/* Enterprise */}
             <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] hover:border-white/20 transition-all flex flex-col">
               <div className="text-gray-400 font-bold mb-4 uppercase tracking-widest text-xs">Enterprise</div>
-              <div className="text-5xl font-black mb-8">$149<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+              <div className="text-5xl font-black mb-8">৳5000<span className="text-lg text-gray-500 font-normal">/year</span></div>
               <ul className="space-y-4 mb-10 text-gray-400 flex-1">
-                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Unlimited Sessions</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> 5 Whatsapp Accounts</li>
                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Dedicated Account Manager</li>
-                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Custom SLA</li>
-                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Team Collaboration</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Customizable Chat BOT </li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Unlimited Messages</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> Advanced Analytics</li>
+                <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-green-500" /> API Access</li>
               </ul>
-              <button className="w-full py-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-all font-bold">Talk to Sales</button>
+              <button className="w-full py-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-all font-bold">Go Pro</button>
             </div>
           </div>
         </section>

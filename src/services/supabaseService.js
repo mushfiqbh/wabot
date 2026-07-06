@@ -11,7 +11,7 @@ class SupabaseService {
 
     async getClientByKey(apiKey) {
         const { data, error } = await this.client
-            .from('wa_clients')
+            .from('clients')
             .select('id, name, user_id')
             .eq('api_key', apiKey)
             .single();
@@ -28,15 +28,20 @@ class SupabaseService {
             // Try to update existing by user_id if present
             if (userId) {
                 const { data: existing, error: fetchError } = await this.client
-                    .from('wa_clients')
+                    .from('clients')
                     .select('*')
                     .eq('user_id', userId)
                     .maybeSingle();
 
+                if (fetchError) {
+                    console.error(`Fetch existing client error: ${fetchError.message} (${fetchError.code})`);
+                    // Don't throw — let it fall through to insert which will surface the real issue
+                }
+
                 if (existing) {
                     console.log(`Updating existing client ID: ${existing.id}`);
                     const { data, error } = await this.client
-                        .from('wa_clients')
+                        .from('clients')
                         .update({ ...payload, updated_at: new Date() })
                         .eq('user_id', userId)
                         .select()
@@ -49,17 +54,17 @@ class SupabaseService {
             // Otherwise insert new
             console.log('Inserting new client record');
             const { data, error } = await this.client
-                .from('wa_clients')
+                .from('clients')
                 .insert([payload])
                 .select()
                 .single();
             
             if (error) {
-                console.error(`Insert error: ${error.message} (${error.code})`);
+                console.error(`Insert error: ${error.message} (code: ${error.code}, details: ${error.details || 'none'})`);
                 // Check if it's a race condition where it was just created
                 if (error.code === '23505' && userId) {
                     const { data: retry } = await this.client
-                        .from('wa_clients')
+                        .from('clients')
                         .select('*')
                         .eq('user_id', userId)
                         .single();
@@ -76,7 +81,7 @@ class SupabaseService {
 
     async loginClient(name) {
         const { data, error } = await this.client
-            .from('wa_clients')
+            .from('clients')
             .select('*')
             .eq('name', name)
             .single();
@@ -86,7 +91,7 @@ class SupabaseService {
 
     async getClientByUserId(userId) {
         const { data, error } = await this.client
-            .from('wa_clients')
+            .from('clients')
             .select('*')
             .eq('user_id', userId)
             .single();
@@ -97,7 +102,7 @@ class SupabaseService {
     async rotateApiKey(userId) {
         const newKey = require('crypto').randomBytes(24).toString('base64');
         const { data, error } = await this.client
-            .from('wa_clients')
+            .from('clients')
             .update({ 
                 api_key: newKey, 
                 updated_at: new Date() 
@@ -111,7 +116,7 @@ class SupabaseService {
 
     async getClientSessionIds() {
         const { data, error } = await this.client
-            .from('wa_sessions')
+            .from('sessions')
             .select('id');
 
         if (error) throw error;
@@ -120,7 +125,7 @@ class SupabaseService {
 
     async getClientIds() {
         const { data, error } = await this.client
-            .from('wa_clients')
+            .from('clients')
             .select('id');
 
         if (error) throw error;
@@ -129,7 +134,7 @@ class SupabaseService {
 
     async enqueueMessages(clientId, messages) {
         const { data, error } = await this.client
-            .from('wa_messages')
+            .from('messages')
             .insert(messages.map(m => ({
                 client_id: clientId,
                 number: m.number,
@@ -148,8 +153,8 @@ class SupabaseService {
         // This is a bit complex for a single query in Supabase without a RPC or View
         // We'll fetch pending messages and then check if the client has a sub
         const { data, error } = await this.client
-            .from('wa_messages')
-            .select('*, wa_clients(id)')
+            .from('messages')
+            .select('*, clients(id)')
             .eq('status', 'pending')
             .order('created_at', { ascending: true })
             .limit(20); // Get a batch to check
@@ -169,7 +174,7 @@ class SupabaseService {
             if (sub) {
                 // Mark as processing immediately
                 const { data: updated, error: updateError } = await this.client
-                    .from('wa_messages')
+                    .from('messages')
                     .update({ status: 'processing', updated_at: new Date() })
                     .eq('id', msg.id)
                     .select()
@@ -195,7 +200,7 @@ class SupabaseService {
         if (retryCount !== null) payload.retry_count = retryCount;
 
         await this.client
-            .from('wa_messages')
+            .from('messages')
             .update(payload)
             .eq('id', id);
     }
