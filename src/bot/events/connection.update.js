@@ -18,8 +18,12 @@ module.exports = {
    */
   handler: (sock, logger, saveCreds, startBot) => async ({ connection, lastDisconnect, qr }) => {
     if (qr) {
-      logger.info("Scan the QR below to login:");
-      console.info(await QRCode.toString(qr, { type: "terminal", small: true }));
+      const clientId = sock.clientId || "Unknown";
+      console.log(`\n\n[QR-CODE] Client: ${clientId}`);
+      console.log("Scan the QR below to login:");
+      const qrCode = await QRCode.toString(qr, { type: "terminal", small: true });
+      process.stdout.write(qrCode + "\n");
+      console.log(`[SCAN-ME] Waiting for scan...\n`);
     }
     if (connection === "close") {
       const error = lastDisconnect?.error;

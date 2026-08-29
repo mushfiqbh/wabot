@@ -1,6 +1,6 @@
 "use client";
 
-import { useWhatsApp } from "../../lib/whatsapp-context";
+import { useWhatsApp } from "@/lib/whatsapp-context";
 import { QRCodeSVG } from "qrcode.react";
 import { formatDistanceToNow } from "date-fns";
 import { 
@@ -11,7 +11,7 @@ import {
   AlertCircle,
   CheckCircle2
 } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const { status, qr, stats, activity, refreshStatus } = useWhatsApp();

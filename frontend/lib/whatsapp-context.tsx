@@ -57,7 +57,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Fetch stats
       const { data: messages } = await supabase
-        .from("wa_messages")
+        .from("messages")
         .select("status");
       
       if (messages) {
@@ -72,7 +72,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
 
       // Fetch recent activity
       const { data: recent } = await supabase
-        .from("wa_messages")
+        .from("messages")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
@@ -88,7 +88,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
   const fetchClientData = useCallback(async (userId: string) => {
     try {
       const { data: client } = await supabase
-        .from("wa_clients")
+        .from("clients")
         .select("api_key")
         .eq("user_id", userId)
         .single();

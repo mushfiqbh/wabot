@@ -82,6 +82,7 @@ class SessionManager {
             keepAliveIntervalMs: 10000,
         });
 
+        sock.clientId = clientId; // Attach clientId to sock
         sock.ev.on('creds.update', saveCreds);
 
         // Register all event handlers

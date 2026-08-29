@@ -9,15 +9,19 @@ import {
   Code2, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  CreditCard,
+  Package
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../lib/auth-context";
 import { cn } from "../lib/utils";
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Account', href: '/account', icon: User },
+  { name: 'Pricing', href: '/pricing', icon: CreditCard },
+  { name: 'My Package', href: '/package', icon: Package },
   { name: 'Message Testing', href: '/messages', icon: MessageSquare },
   { name: 'Developer API', href: '/api', icon: Code2 },
 ];
