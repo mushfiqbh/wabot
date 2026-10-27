@@ -204,5 +204,44 @@ class SupabaseService {
             .update(payload)
             .eq('id', id);
     }
+    async logMessageFailure({ clientId, messageId = null, number = null, error, errorCode = null, retryCount = null, stage = null }) {
+        try {
+            const payload = {
+                client_id: clientId,
+                error_message: typeof error === 'string' ? error : (error?.message || String(error)),
+            };
+            if (messageId) payload.message_id = messageId;
+            if (number) payload.number = number;
+            if (errorCode) payload.error_code = String(errorCode);
+            if (retryCount !== null && retryCount !== undefined) payload.retry_count = retryCount;
+            if (stage) payload.stage = stage;
+
+            const { error: insertError } = await this.client
+                .from('message_failures')
+                .insert([payload]);
+
+            if (insertError) {
+                console.error(`Failed to log message failure: ${insertError.message}`);
+            }
+        } catch (err) {
+            console.error(`logMessageFailure threw: ${err.message}`);
+        }
+    }
+
+    async getRecentMessageFailures(clientId, limit = 50) {
+        const { data, error } = await this.client
+            .from('message_failures')
+            .select('id, client_id, message_id, number, error_message, error_code, retry_count, stage, created_at')
+            .eq('client_id', clientId)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) {
+            console.error(`Failed to fetch message failures: ${error.message}`);
+            return [];
+        }
+        return data || [];
+    }
+
 }
 module.exports = new SupabaseService();

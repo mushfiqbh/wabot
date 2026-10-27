@@ -31,8 +31,8 @@ const sendBatch = async (req, res) => {
 
         const enqueued = await supabaseService.enqueueMessages(req.clientId, messagesToEnqueue);
 
-        res.status(202).json({ 
-            status: true, 
+        res.status(202).json({
+            status: true,
             message: `Processed ${batches.length} batches. ${enqueued.length} messages added to queue.`,
             results: enqueued.map(m => ({ id: m.id, number: m.number, status: m.status }))
         });
@@ -46,9 +46,9 @@ const connect = async (req, res) => {
     try {
         await sessionManager.getSession(req.clientId);
         const qr = sessionManager.getQR(req.clientId);
-        res.status(200).json({ 
+        res.status(200).json({
             connected: sessionManager.isConnected(req.clientId),
-            qr: qr || null 
+            qr: qr || null
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -62,4 +62,32 @@ const status = async (req, res) => {
     });
 };
 
-module.exports = { sendBatch, connect, status };
+const reset = async (req, res) => {
+    try {
+        await sessionManager.resetConnection(req.clientId);
+        // Immediately spin up a fresh session so the client can scan a new QR
+        await sessionManager.getSession(req.clientId);
+        res.status(200).json({
+            status: true,
+            message: 'Connection reset. Scan the new QR code to link again.',
+            qr: sessionManager.getQR(req.clientId) || null,
+            connected: sessionManager.isConnected(req.clientId),
+        });
+    } catch (err) {
+        logger.error(`Reset connection error for ${req.clientId}: ${err.message}`);
+        res.status(500).json({ status: false, error: err.message });
+    }
+};
+
+const failures = async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit, 10) || 100, 200);
+        const rows = await supabaseService.getRecentMessageFailures(req.clientId, limit);
+        res.status(200).json({ status: true, count: rows.length, failures: rows });
+    } catch (err) {
+        logger.error(`Fetch failures error for ${req.clientId}: ${err.message}`);
+        res.status(500).json({ status: false, error: err.message });
+    }
+};
+
+module.exports = { sendBatch, connect, status, reset, failures };

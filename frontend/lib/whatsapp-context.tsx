@@ -27,6 +27,7 @@ interface WhatsAppContextType {
   activity: Activity[];
   refreshStatus: () => Promise<void>;
   rotateApiKey: () => Promise<void>;
+  resetConnection: () => Promise<void>;
   loading: boolean;
 }
 
@@ -38,6 +39,7 @@ const WhatsAppContext = createContext<WhatsAppContextType>({
   activity: [],
   refreshStatus: async () => {},
   rotateApiKey: async () => {},
+  resetConnection: async () => {},
   loading: true,
 });
 
@@ -59,7 +61,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
       const { data: messages } = await supabase
         .from("messages")
         .select("status");
-      
+
       if (messages) {
         const newStats = {
           total: messages.length,
@@ -76,7 +78,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
-      
+
       if (recent) {
         setActivity(recent);
       }
@@ -107,7 +109,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
       const res = await axios.get(`${API_BASE}/connect`, {
         headers: { 'x-api-key': apiKey }
       });
-      
+
       setStatus(res.data.connected ? 'Connected' : 'Disconnected');
       setQr(res.data.qr || null);
     } catch (err) {
@@ -128,6 +130,25 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
       throw err;
     }
   }, []);
+
+  const resetConnection = useCallback(async () => {
+    if (!apiKey) throw new Error("Not authenticated");
+    // Optimistically clear local state — backend will spin up a fresh session
+    setStatus("Disconnected");
+    setQr(null);
+    try {
+      await axios.post(
+        `${API_BASE}/reset`,
+        {},
+        { headers: { "x-api-key": apiKey } }
+      );
+      // Pull the new QR / connection status
+      await refreshStatus();
+    } catch (err: any) {
+      console.error("Error resetting connection:", err?.response?.data || err?.message);
+      throw err;
+    }
+  }, [apiKey, refreshStatus]);
 
   useEffect(() => {
     const handleAuthChange = async () => {
@@ -154,7 +175,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
         await refreshStatus();
         await fetchStatsAndActivity();
       };
-      
+
       initStatus();
       const interval = setInterval(async () => {
         await refreshStatus();
@@ -165,7 +186,7 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
   }, [apiKey, refreshStatus, fetchStatsAndActivity]);
 
   return (
-    <WhatsAppContext.Provider value={{ status, qr, apiKey, stats, activity, refreshStatus, rotateApiKey, loading }}>
+    <WhatsAppContext.Provider value={{ status, qr, apiKey, stats, activity, refreshStatus, rotateApiKey, resetConnection, loading }}>
       {children}
     </WhatsAppContext.Provider>
   );

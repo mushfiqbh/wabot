@@ -108,7 +108,7 @@ export default function DeveloperApiPage() {
           </h3>
           <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 space-y-2 overflow-x-auto">
             <p className="text-blue-400">{"// JavaScript / Node.js example"}</p>
-            <p>{"fetch('https://whatsapp-api-w0jb.onrender.com/send', {"}</p>
+            <p>{"fetch('" + process.env.NEXT_PUBLIC_API_BASE_URL + "/send', {"}</p>
             <p className="pl-4">{"method: 'POST',"}</p>
             <p className="pl-4">{"headers: {"}</p>
             <p className="pl-8">{"'Content-Type': 'application/json',"}</p>

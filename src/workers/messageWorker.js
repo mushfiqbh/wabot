@@ -24,13 +24,13 @@ class MessageWorker {
         while (this.isRunning) {
             try {
                 const job = await supabaseService.getNextPendingMessage();
-                
+
                 if (job) {
                     logger.info(`Processing message ${job.id} for client ${job.client_id} to ${job.number}`);
-                    
+
                     try {
                         let sock = await sessionManager.getSession(job.client_id);
-                        
+
                         // Wait for connection to be ready if it's currently connecting
                         let retries = 0;
                         while ((!sock || !sessionManager.isConnected(job.client_id)) && retries < 10) {
@@ -41,6 +41,19 @@ class MessageWorker {
                         }
 
                         if (!sock || !sessionManager.isConnected(job.client_id)) {
+                            // Record the connection-timeout failure (does not throw)
+                            try {
+                                await supabaseService.logMessageFailure({
+                                    clientId: job.client_id,
+                                    messageId: job.id,
+                                    number: job.number,
+                                    error: 'WhatsApp session not connected (timeout)',
+                                    errorCode: 'CONNECTION_TIMEOUT',
+                                    stage: 'connection_timeout',
+                                });
+                            } catch (logErr) {
+                                logger.error(`logMessageFailure failed: ${logErr.message}`);
+                            }
                             throw new Error('WhatsApp session not connected (timeout)');
                         }
 
@@ -59,10 +72,24 @@ class MessageWorker {
 
                     } catch (err) {
                         logger.error(`Error sending message ${job.id}: ${err.message}`);
-                        
+
                         // Detailed error handling
                         const errorMsg = err.message || 'Unknown error';
-                        
+
+                        // Always record the failure in message_failures
+                        try {
+                            await supabaseService.logMessageFailure({
+                                clientId: job.client_id,
+                                messageId: job.id,
+                                number: job.number,
+                                error: errorMsg,
+                                errorCode: err?.output?.statusCode || err?.code || null,
+                                stage: 'send',
+                            });
+                        } catch (logErr) {
+                            logger.error(`logMessageFailure failed: ${logErr.message}`);
+                        }
+
                         // Check if we should retry or fail
                         const currentRetryCount = job.retry_count || 0;
                         const maxRetries = 3;

@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  Package
+  Package,
+  AlertTriangle
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../lib/auth-context";
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'My Package', href: '/package', icon: Package },
   { name: 'Message Testing', href: '/messages', icon: MessageSquare },
+  { name: 'Failure Log', href: '/failures', icon: AlertTriangle },
   { name: 'Developer API', href: '/api', icon: Code2 },
 ];
 

@@ -66,6 +66,64 @@ class SessionManager {
         return sessionPromise;
     }
 
+    /**
+     * Reset (unlink) the WhatsApp session for a client.
+     * Ends the active socket, wipes the persisted auth state in Supabase,
+     * and clears in-memory state so the next getSession() call generates a fresh QR.
+     */
+    async resetConnection(clientId) {
+        const sock = this.sessions.get(clientId);
+
+        // 1) Tear down any active socket cleanly
+        if (sock) {
+            try {
+                if (typeof sock.logout === 'function') {
+                    await sock.logout().catch(() => {});
+                }
+            } catch (err) {
+                this.logger.warn(`Logout during reset for ${clientId} failed: ${err.message}`);
+            }
+            try {
+                sock.ev?.removeAllListeners?.();
+                if (typeof sock.end === 'function') {
+                    sock.end();
+                } else if (sock.ws?.close) {
+                    sock.ws.close();
+                }
+            } catch (err) {
+                this.logger.warn(`Socket end during reset for ${clientId} failed: ${err.message}`);
+            }
+        }
+
+        // 2) Clear in-memory state so a new session can be created
+        this.sessions.delete(clientId);
+        this.sessionPromises.delete(clientId);
+        this.qrs.delete(clientId);
+        this.connectionStates.set(clientId, false);
+
+        // 3) Wipe the persisted auth state in Supabase so the next
+        //    initSocket call gets fresh creds and emits a new QR.
+        const { error: deleteError } = await supabase
+            .from('sessions')
+            .delete()
+            .eq('id', clientId);
+
+        if (deleteError) {
+            // Fallback: blank out the data column if a hard delete is blocked by RLS/policy
+            const { error: updateError } = await supabase
+                .from('sessions')
+                .update({ data: {}, updated_at: new Date() })
+                .eq('id', clientId);
+
+            if (updateError) {
+                throw new Error(`Failed to clear session row for ${clientId}: ${updateError.message}`);
+            }
+        }
+
+        this.logger.info(`Reset connection for client ${clientId}`);
+        return true;
+    }
+
     async initSocket(clientId) {
         const { version } = await fetchLatestBaileysVersion();
         

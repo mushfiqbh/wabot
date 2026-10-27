@@ -6,5 +6,7 @@ const authenticate = require('../middlewares/authMiddleware');
 router.post('/send', authenticate, messageController.sendBatch);
 router.get('/connect', authenticate, messageController.connect);
 router.get('/status', authenticate, messageController.status);
+router.post('/reset', authenticate, messageController.reset);
+router.get('/failures', authenticate, messageController.failures);
 
 module.exports = router;
