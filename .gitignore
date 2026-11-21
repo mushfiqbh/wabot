@@ -16,3 +16,5 @@ logs/
 *.log
 
 .env
+# API build output
+apps/api/dist/
