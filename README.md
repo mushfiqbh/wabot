@@ -42,13 +42,21 @@ cd bot-whatsapp-template
 ### 2. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
-### 3. Start the bot
+### 3. Start an app
+
+Start the WhatsApp bot API:
 
 ```bash
-npm start
+pnpm start:api
+```
+
+Start the web app in development mode:
+
+```bash
+pnpm --filter provision dev
 ```
 
 ### 4. Scan the QR code

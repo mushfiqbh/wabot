@@ -1,6 +1,7 @@
 # Node
 node_modules
 node_modules/
+.turbo
 
 # Session / auth info (Baileys)
 auth_info
