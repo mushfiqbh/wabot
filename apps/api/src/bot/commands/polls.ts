@@ -1,11 +1,11 @@
 
 /**
  * Creates a poll in the chat.
- * Usage: !poll Question? Option1; Option2; Option3
+ * Usage: >poll Question? Option1; Option2; Option3
  */
 module.exports = {
   name: "poll",
-  description: "Create a poll. Usage: !poll Question? Option1; Option2; Option3",
+  description: "Create a poll. Usage: >poll Question? Option1; Option2; Option3",
   /**
    * Sends a poll message to the chat.
    * @param {object} sock - WhatsApp socket instance
@@ -14,7 +14,7 @@ module.exports = {
    */
   async execute(sock, from, args) {
     if (!args.length) {
-      await sock.sendMessage(from, { text: "Usage: !poll Question? Option1; Option2; Option3" });
+      await sock.sendMessage(from, { text: "Usage: >poll Question? Option1; Option2; Option3" });
       return;
     }
     const input = args.join(" ").split("?");

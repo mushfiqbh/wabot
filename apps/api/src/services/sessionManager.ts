@@ -141,6 +141,10 @@ class SessionManager {
             keepAliveIntervalMs: 10000,
         });
 
+        // Register the socket before attaching listeners. Older sockets can emit
+        // delayed close/open events during reconnect; only the current socket may
+        // change this client's connection state.
+        this.sessions.set(clientId, sock);
         sock.clientId = clientId; // Attach clientId to sock
         sock.ev.on('creds.update', saveCreds);
 
@@ -149,6 +153,11 @@ class SessionManager {
             if (eventName === "connection.update") {
                 // Special handling for connection update to capture QR and state
                 sock.ev.on(eventName, async (update) => {
+                    if (this.sessions.get(clientId) !== sock) {
+                        this.logger.debug(`Ignoring connection update from stale socket for ${clientId}`);
+                        return;
+                    }
+
                     const { connection, lastDisconnect, qr } = update;
                     if (qr) this.qrs.set(clientId, qr);
                     if (connection === 'open') {
@@ -172,8 +181,12 @@ class SessionManager {
                             });
                         }
                     }
-                    // The external connection.update handler handles the actual reconnection logic
-                    handler(sock, this.logger, saveCreds, () => this.getSession(clientId))(update);
+                    // SessionManager owns reconnects. Catch failures from async event handlers so
+                    // a QR render or notification error cannot become an unhandled rejection.
+                    Promise.resolve(handler(sock, this.logger, saveCreds, () => this.getSession(clientId))(update))
+                        .catch((err) => {
+                            this.logger.error({ err, clientId }, 'connection.update handler failed');
+                        });
                 });
             } else if (eventName === "messages.upsert") {
                 sock.ev.on(eventName, handler(sock, this.logger, this.commands));

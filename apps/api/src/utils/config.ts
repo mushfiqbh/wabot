@@ -5,12 +5,15 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
-require('dotenv').config();
+
+// Resolve runtime files from the API package, not process.cwd(). Process managers
+// often launch this service with the monorepo root as their working directory.
+const apiRoot = path.resolve(__dirname, '../..');
+require('dotenv').config({ path: path.join(apiRoot, '.env') });
 
 let config = {};
 try {
-  // Config is expected at the root
-  const configPath = path.join(process.cwd(), 'bot.yml');
+  const configPath = path.join(apiRoot, 'bot.yml');
   const file = fs.readFileSync(configPath, 'utf8');
   config = yaml.load(file);
 } catch (e) {

@@ -4,7 +4,7 @@
 
 const QRCode = require("qrcode");
 const { Boom } = require("@hapi/boom");
-const { DisconnectReason, delay } = require("@whiskeysockets/baileys");
+const { DisconnectReason } = require("@whiskeysockets/baileys");
 
 module.exports = {
   eventName: "connection.update",
@@ -30,10 +30,9 @@ module.exports = {
       const reasonCode = error?.output?.statusCode || (error instanceof Boom ? error.output.statusCode : 0);
       const shouldReconnect = reasonCode !== DisconnectReason.loggedOut;
       logger.warn(`Connection closed. Code: ${reasonCode}. Reconnecting? ${shouldReconnect}`);
-      if (shouldReconnect) {
-        await delay(3000);
-        startBot();
-      } else {
+      // Reconnection is coordinated by SessionManager. Starting it here as well
+      // creates concurrent sockets, which WhatsApp closes with code 440.
+      if (!shouldReconnect) {
         logger.error("Logged out. Please delete auth_info and re-authenticate.");
       }
     } else if (connection === "open") {
@@ -47,7 +46,7 @@ module.exports = {
           logger.warn("Could not determine bot's own WhatsApp ID for self-DM.");
         }
       } catch (err) {
-        logger.error("Failed to send self-DM:", err);
+        logger.error({ err }, "Failed to send self-DM");
       }
     }
   }

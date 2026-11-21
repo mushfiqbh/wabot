@@ -7,10 +7,10 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build --filter=web",
-    "start:api": "pnpm --filter api start",
-    "start:web": "pnpm --filter web start",
-    "lint": "turbo run lint --filter=web",
+    "build": "turbo run build --filter=@wabot/web",
+    "start:api": "pnpm --filter @wabot/api start",
+    "start:web": "pnpm --filter @wabot/web start",
+    "lint": "turbo run lint --filter=@wabot/web",
     "clean": "pnpm -r --if-present clean",
     "typecheck": "pnpm -r --if-present typecheck"
   },
