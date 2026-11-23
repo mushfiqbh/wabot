@@ -77,6 +77,9 @@ class MessageWorker {
                         // Detailed error handling
                         const errorMsg = err.message || 'Unknown error';
 
+                        const currentRetryCount = job.retry_count || 0;
+                        const maxRetries = 3;
+
                         // Always record the failure in message_failures
                         try {
                             await supabaseService.logMessageFailure({
@@ -85,6 +88,7 @@ class MessageWorker {
                                 number: job.number,
                                 error: errorMsg,
                                 errorCode: err?.output?.statusCode || err?.code || null,
+                                retryCount: currentRetryCount + 1,
                                 stage: 'send',
                             });
                         } catch (logErr) {
@@ -92,12 +96,18 @@ class MessageWorker {
                         }
 
                         // Check if we should retry or fail
-                        const currentRetryCount = job.retry_count || 0;
-                        const maxRetries = 3;
-
                         if (currentRetryCount < maxRetries) {
-                            logger.warn(`Retrying message ${job.id} (${currentRetryCount + 1}/${maxRetries})`);
-                            await supabaseService.updateMessageStatus(job.id, 'pending', errorMsg, currentRetryCount + 1);
+                            const nextRetryCount = currentRetryCount + 1;
+                            const backoffMs = Math.min(5000 * (2 ** currentRetryCount), 60000);
+                            const nextAttemptAt = new Date(Date.now() + backoffMs).toISOString();
+                            logger.warn(`Retrying message ${job.id} (${nextRetryCount}/${maxRetries}) after ${backoffMs}ms`);
+                            await supabaseService.updateMessageStatus(
+                                job.id,
+                                'pending',
+                                errorMsg,
+                                nextRetryCount,
+                                nextAttemptAt
+                            );
                         } else {
                             await supabaseService.updateMessageStatus(job.id, 'failed', `Max retries exceeded: ${errorMsg}`);
                         }

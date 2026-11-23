@@ -148,22 +148,20 @@ class SupabaseService {
     }
 
     async getNextPendingMessage() {
-        // Find messages where the client has an active subscription
         const now = new Date().toISOString();
-        
-        // This is a bit complex for a single query in Supabase without a RPC or View
-        // We'll fetch pending messages and then check if the client has a sub
         const { data, error } = await this.client
             .from('messages')
-            .select('*, clients(id)')
+            .select('*')
             .eq('status', 'pending')
+            .or(`next_attempt_at.is.null,next_attempt_at.lte.${now}`)
             .order('created_at', { ascending: true })
-            .limit(20); // Get a batch to check
+            .limit(20);
 
-        if (error || !data || data.length === 0) return null;
+        if (error) throw new Error(`Failed to read pending messages: ${error.message}`);
+        if (!data || data.length === 0) return null;
 
         for (const msg of data) {
-            const { data: sub } = await this.client
+            const { data: sub, error: subscriptionError } = await this.client
                 .from('subscriptions')
                 .select('id')
                 .eq('client_id', msg.client_id)
@@ -172,16 +170,23 @@ class SupabaseService {
                 .limit(1)
                 .maybeSingle();
 
+            if (subscriptionError) {
+                throw new Error(`Failed to check subscription for client ${msg.client_id}: ${subscriptionError.message}`);
+            }
+
             if (sub) {
                 // Mark as processing immediately
+                // Conditional update prevents two API workers from claiming the same row.
                 const { data: updated, error: updateError } = await this.client
                     .from('messages')
-                    .update({ status: 'processing', updated_at: new Date() })
+                    .update({ status: 'processing', next_attempt_at: null, updated_at: new Date() })
                     .eq('id', msg.id)
+                    .eq('status', 'pending')
                     .select()
-                    .single();
+                    .maybeSingle();
 
-                if (!updateError) return updated;
+                if (updateError) throw new Error(`Failed to claim message ${msg.id}: ${updateError.message}`);
+                if (updated) return updated;
             } else {
                 // Optional: mark message as failed if no active sub
                 await this.updateMessageStatus(msg.id, 'failed', 'No active subscription');
@@ -191,19 +196,22 @@ class SupabaseService {
         return null;
     }
 
-    async updateMessageStatus(id, status, errorMsg = null, retryCount = null) {
+    async updateMessageStatus(id, status, errorMsg = null, retryCount = null, nextAttemptAt = null) {
         const payload: Record<string, any> = { 
             status, 
             updated_at: new Date() 
         };
         if (status === 'sent') payload.sent_at = new Date();
+        if (status === 'sent' || status === 'failed') payload.next_attempt_at = null;
         if (errorMsg) payload.error = errorMsg;
         if (retryCount !== null) payload.retry_count = retryCount;
+        if (nextAttemptAt !== null) payload.next_attempt_at = nextAttemptAt;
 
-        await this.client
+        const { error } = await this.client
             .from('messages')
             .update(payload)
             .eq('id', id);
+        if (error) throw new Error(`Failed to update message ${id} status to ${status}: ${error.message}`);
     }
     async logMessageFailure({ clientId, messageId = null, number = null, error, errorCode = null, retryCount = null, stage = null }) {
         try {
