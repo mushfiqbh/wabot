@@ -10,6 +10,7 @@ import {
   Terminal,
   RefreshCw,
   AlertCircle,
+  Plus,
 } from "lucide-react";
 import { cn } from "../../../lib/utils";
 
@@ -45,22 +46,28 @@ export default function MessageTestingPage() {
         "error",
       );
 
+    const digits = phoneNumber.replace(/\D/g, "");
+    if (!/^[1-9]\d{7,14}$/.test(digits)) {
+      return addLog("Enter a country code and phone number with 8–15 digits, for example 8801712345678.", "error");
+    }
+    const internationalNumber = `+${digits}`;
     setLoading(true);
-    addLog(`Attempting to send message to ${phoneNumber}...`);
+    addLog(`Attempting to send message to ${internationalNumber}...`);
 
     try {
       await axios.post(
         `${API_BASE}/send`,
-        [{ numbers: phoneNumber, message }],
+        [{ numbers: internationalNumber, message }],
         {
           headers: { "x-api-key": apiKey },
         },
       );
-      addLog("Message sent successfully!", "success");
+      addLog(`Message queued for ${internationalNumber}.`, "success");
       setMessage("");
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to send message.";
+      const errorMessage = axios.isAxiosError(err)
+        ? err.response?.data?.error || err.response?.data?.message || err.message
+        : err instanceof Error ? err.message : "Failed to send message.";
       addLog(errorMessage, "error");
     } finally {
       setLoading(false);
@@ -91,22 +98,21 @@ export default function MessageTestingPage() {
           <form onSubmit={handleSendMessage} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Recipient Phone Number
+                Recipient Phone Number (international format)
               </label>
               <div className="relative">
-                <Phone
-                  className="absolute left-3 top-3 text-gray-400"
-                  size={18}
-                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-500" aria-hidden="true"><Plus size={16} /><Phone size={16} /></span>
                 <input
-                  type="text"
+                  type="tel"
                   required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-                  placeholder="e.g. 5511999999999"
+                  inputMode="numeric"
+                  className="pl-16 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                  placeholder="8801712345678"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
                 />
               </div>
+              <p className="mt-1.5 text-xs text-gray-500">Include the country calling code. We’ll add the + prefix when sending.</p>
             </div>
 
             <div>

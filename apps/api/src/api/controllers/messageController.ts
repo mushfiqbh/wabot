@@ -14,7 +14,7 @@ const sendBatch = async (req, res) => {
 
     // Basic validation for all message batches
     for (const batch of batches) {
-        if (!batch.numbers || !batch.message) {
+        if (!batch.numbers || typeof batch.message !== 'string' || !batch.message.trim()) {
             return res.status(400).json({ error: "Each batch must have 'numbers' and 'message'" });
         }
     }
@@ -25,8 +25,19 @@ const sendBatch = async (req, res) => {
         for (const batch of batches) {
             const numbers = batch.numbers.toString().split(',').map(n => n.trim()).filter(n => n !== "");
             for (const number of numbers) {
-                messagesToEnqueue.push({ number, message: batch.message });
+                // Require E.164 input so the country calling code is explicit and
+                // the response/database retain the same international number.
+                if (!/^\+[1-9]\d{7,14}$/.test(number)) {
+                    return res.status(400).json({
+                        error: `Invalid phone number "${number}". Use international format with + and country code, such as +8801712345678.`,
+                    });
+                }
+                messagesToEnqueue.push({ number, message: batch.message.trim() });
             }
+        }
+
+        if (messagesToEnqueue.length === 0) {
+            return res.status(400).json({ error: "At least one valid phone number is required" });
         }
 
         const enqueued = await supabaseService.enqueueMessages(req.clientId, messagesToEnqueue);

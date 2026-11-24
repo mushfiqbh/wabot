@@ -12,7 +12,8 @@ import {
   ChevronRight,
   CreditCard,
   Package,
-  AlertTriangle
+  AlertTriangle,
+  BarChart3,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../lib/auth-context";
@@ -21,11 +22,12 @@ import { cn } from "../lib/utils";
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Account', href: '/account', icon: User },
-  { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'My Package', href: '/package', icon: Package },
   { name: 'Message Testing', href: '/messages', icon: MessageSquare },
-  { name: 'Failure Log', href: '/failures', icon: AlertTriangle },
   { name: 'Developer API', href: '/api', icon: Code2 },
+  { name: 'SMS Reports', href: '/reports', icon: BarChart3 },
+  { name: 'Failure Log', href: '/failures', icon: AlertTriangle },
+  { name: 'Pricing', href: '/pricing', icon: CreditCard },
 ];
 
 export function Sidebar({ mobileOpen, setMobileOpen }: { mobileOpen?: boolean, setMobileOpen?: (v: boolean) => void }) {

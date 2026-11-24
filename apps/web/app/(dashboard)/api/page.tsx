@@ -38,7 +38,7 @@ export default function DeveloperApiPage() {
       method: "POST",
       endpoint: "/send",
       params: ["apiKey", "numbers", "message"],
-      description: "Send messages to one or more numbers. Accepts an array of objects where 'numbers' can be a single number or a comma-separated list."
+      description: "Send messages to one or more E.164 phone numbers. Each number must include + and its country calling code (for example +8801712345678). 'numbers' can be one number or a comma-separated list. The 202 response includes each queued recipient in the same international format."
     },
     {
       name: "Connection Status",
@@ -115,8 +115,8 @@ export default function DeveloperApiPage() {
             <p className="pl-8 text-yellow-500">{"'x-api-key': 'YOUR_API_KEY'"}</p>
             <p className="pl-4">{"},"}</p>
             <p className="pl-4">{"body: JSON.stringify(["}</p>
-            <p className="pl-8">{"{ numbers: '12345678, 87654321', message: 'Hello batch!' },"}</p>
-            <p className="pl-8">{"{ numbers: '11223344', message: 'Single recipient' }"}</p>
+            <p className="pl-8">{"{ numbers: '+8801712345678, +14155552671', message: 'Hello batch!' },"}</p>
+            <p className="pl-8">{"{ numbers: '+8801812345678', message: 'Single recipient' }"}</p>
             <p className="pl-4">{"])"}</p>
             <p>{"});"}</p>
           </div>
